@@ -1,7 +1,7 @@
 arch=x86_64
 version=0.2.0
 
-export ARCH=x86
+export ARCH=x86_64
 
 circle_build_kernel:
 	git clone -b linux-rolling-stable --single-branch --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
@@ -9,6 +9,8 @@ circle_build_kernel:
 	cd linux-stable && $(MAKE) olddefconfig
 	cd linux-stable && sed -i -e "s/CONFIG_LSM=\"yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor\"/CONFIG_LSM=\"yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor,bpf\"/g" .config
 	cd linux-stable && sed -i -e "s/# CONFIG_BPF_LSM is not set/CONFIG_BPF_LSM=y/g" .config
+	cd linux-stable && sed -i -e 's/CONFIG_SYSTEM_TRUSTED_KEYS=.*/CONFIG_SYSTEM_TRUSTED_KEYS=""/' .config
+	cd linux-stable && sed -i -e 's/CONFIG_SYSTEM_REVOCATION_KEYS=.*/CONFIG_SYSTEM_REVOCATION_KEYS=""/' .config
 	cd linux-stable && sed -i -e "s/# CONFIG_IP_ADVANCED_ROUTER is not set/CONFIG_IP_ADVANCED_ROUTER=y/g" .config
 	cd linux-stable && sed -i -e "s/# CONFIG_IP_MULTIPLE_TABLES is not set/CONFIG_IP_MULTIPLE_TABLES=y/g" .config
 	cd linux-stable && sed -i -e "s/# CONFIG_NETFILTER_NETLINK is not set/CONFIG_NETFILTER_NETLINK=y/g" .config
@@ -27,7 +29,7 @@ circle_build_kernel:
 	cd linux-stable && sed -i -e "s/# CONFIG_NETFILTER_XT_MARK is not set/CONFIG_NETFILTER_XT_MARK=y/g" .config
 	cd linux-stable && echo "CONFIG_NF_CT_NETLINK=y" >> .config
 	cd linux-stable && echo "CONFIG_SCSI_NETLINK=y" >> .config
-	cd linux-stable && $(MAKE) -j16 ARCH=${arch}
+	cd linux-stable && $(MAKE) -j16 ARCH=${arch} 2>&1 | tee build.log
 	cd linux-stable && $(MAKE) headers_install ARCH=${arch} INSTALL_HDR_PATH=/usr
 	cd linux-stable && $(MAKE) modules_install ARCH=${arch}
 	cd linux-stable && $(MAKE) install ARCH=${arch}

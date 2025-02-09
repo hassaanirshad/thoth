@@ -55,3 +55,8 @@ linux-stable
 track.skel.h
 vmlinux.h
 user
+
+
+thothd
+*.deb
+*.deb.*
