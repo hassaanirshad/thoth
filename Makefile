@@ -4,7 +4,7 @@ version=0.2.0
 export ARCH=x86_64
 
 circle_build_kernel:
-	git clone -b linux-rolling-stable --single-branch --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+	git clone -b linux-5.15.y --single-branch --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 	cd linux-stable && rm -rf .git
 	cd linux-stable && $(MAKE) olddefconfig
 	cd linux-stable && sed -i -e "s/CONFIG_LSM=\"yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor\"/CONFIG_LSM=\"yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor,bpf\"/g" .config
