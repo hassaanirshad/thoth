@@ -70,6 +70,7 @@ int add_inode(struct track *skel, uint32_t index, uint64_t value)
 	id = value;
 	bpf_map_update_elem(map_fd, &inode_track_index, &id, BPF_ANY);
 	inode_track_index++;
+	syslog(LOG_INFO, "thothd: added inode to tracking list. id=%lu \r\n", id);
 	return 0;
 }
 
@@ -164,7 +165,7 @@ static int cli_process_msg(struct op_msg *msg, struct err_msg *err)
 	return 0;
 }
 
-void * cli_server(void *data)
+void *cli_server(void *data)
 {
 	int sockfd;
 	socklen_t client_len;
@@ -262,6 +263,16 @@ int main(int argc, char *argv[])
 	}
 
 	ringbuf = ring_buffer__new(map_fd, buf_process_entry, NULL, NULL);
+
+	// struct op_msg r_msg = {
+	// 	.op = ADD_DIR,
+	// 	.arg = { "/tmp/abc.def" }
+	// };
+	// struct err_msg e_msg = {
+	// 	.err = ERR_OK,
+	// };
+
+	// cli_process_msg(&r_msg, &e_msg);
 
 	while (ring_buffer__poll(ringbuf, -1) >= 0) {
 		// collect prov in callback

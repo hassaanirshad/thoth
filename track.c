@@ -51,7 +51,7 @@ struct {
 	__uint(type, BPF_MAP_TYPE_ARRAY);
 	__type(key, uint32_t);
 	__type(value, struct inode_elem);
-	__uint (max_entries, INODE_MAX_ENTRY);
+	__uint(max_entries, INODE_MAX_ENTRY);
 } inode_map SEC(".maps");
 
 // cache for inodes in tracking dir
@@ -249,6 +249,7 @@ int BPF_PROG(file_permission, struct file *file, int mask)
 	perms = file_mask_to_perms((file->f_inode)->i_mode, mask);
 
 	struct entry_t new_entry = {
+		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.utime = current_task->utime,
 		.gtime = current_task->gtime,
@@ -310,6 +311,7 @@ int BPF_PROG(bprm_creds_for_exec, struct linux_binprm *bprm)
 	}
 
 	struct entry_t new_entry = {
+		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.utime = current_task->utime,
 		.gtime = current_task->gtime,

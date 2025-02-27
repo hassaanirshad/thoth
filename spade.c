@@ -54,6 +54,10 @@ void spade_write_node_proc(int fd, struct entry_t *entry)
 
 	sprintf(inode, "%u", entry->inode_inum);
 
+	char cgroup_inum[32];
+
+	sprintf(cgroup_inum, "%u", entry->cgroup_inum);
+
 	// start json
 	strncat(buf, "{", MAX_BUFFER_LEN);
 
@@ -74,6 +78,11 @@ void spade_write_node_proc(int fd, struct entry_t *entry)
 	strncat(buf, "\"", MAX_BUFFER_LEN);
 	strncat(buf, pid, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"cgroup_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
 
 	// end json
 	strncat(buf, "}}\n", MAX_BUFFER_LEN);

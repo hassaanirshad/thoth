@@ -28,6 +28,7 @@ enum operation {
 };
 
 struct entry_t {
+	unsigned int cgroup_inum;
 	int pid;
 	int utime;
 	int gtime;
