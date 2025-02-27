@@ -22,6 +22,8 @@
 #include <syslog.h>
 #include <dirent.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "common.h"
 #include "record.h"
@@ -29,6 +31,8 @@
 #include "track.skel.h"
 
 #define MAX_LINE_SIZE 100
+
+#define TESTING_DIR "/tmp/thothd_testing"
 
 static struct track *skel = NULL;
 static int fd;
@@ -223,6 +227,29 @@ void *cli_server(void *data)
 	return 0;
 }
 
+void setup_testing()
+{
+	#ifdef TESTING_DIR
+	struct stat st;
+	if ((
+		    stat(TESTING_DIR, &st) == 0 &&
+		    S_ISDIR(st.st_mode)
+		    ) || mkdir(TESTING_DIR, 0755) == 0) {
+		struct op_msg r_msg = {
+			.op = ADD_DIR,
+			.arg = { TESTING_DIR }
+		};
+		struct err_msg e_msg = {
+			.err = ERR_OK,
+		};
+
+		cli_process_msg(&r_msg, &e_msg);
+	} else
+		syslog(LOG_ERR, "Failed to setup testing");
+
+	#endif
+}
+
 int main(int argc, char *argv[])
 {
 	struct ring_buffer *ringbuf = NULL;
@@ -264,15 +291,7 @@ int main(int argc, char *argv[])
 
 	ringbuf = ring_buffer__new(map_fd, buf_process_entry, NULL, NULL);
 
-	// struct op_msg r_msg = {
-	// 	.op = ADD_DIR,
-	// 	.arg = { "/tmp/abc.def" }
-	// };
-	// struct err_msg e_msg = {
-	// 	.err = ERR_OK,
-	// };
-
-	// cli_process_msg(&r_msg, &e_msg);
+	setup_testing();
 
 	while (ring_buffer__poll(ringbuf, -1) >= 0) {
 		// collect prov in callback
