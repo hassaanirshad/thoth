@@ -32,7 +32,8 @@
 
 #define MAX_LINE_SIZE 100
 
-#define TESTING_DIR "/tmp/thothd_testing"
+// #define TESTING_DIR "/tmp/thothd_testing2"
+#define TESTING_DIR "/home/ubuntu/thoth/tmp/runtime-testing"
 
 static struct track *skel = NULL;
 static int fd;
