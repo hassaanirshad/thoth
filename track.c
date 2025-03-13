@@ -222,7 +222,9 @@ int read_path_name_cgroup(struct entry_cgroup_mkdir_t *entry, struct kernfs_node
 	int i = 0;
 
 	if (name != NULL) {
+		// TODO bpf_probe_read_kernel_str
 		int len = bpf_probe_read_user_str(&entry->file_path[i], MAX_NAME_LEN, name);
+		bpf_printk("read %u bytes", len);
 		// bpf_printk("read %u bytes", len);
 		// bpf_printk("%s", entry->file_path[i]);
 		entry->file_path_depth++;
@@ -239,6 +241,18 @@ int read_path_name_cgroup(struct entry_cgroup_mkdir_t *entry, struct kernfs_node
 	// 	// entry->file_path_depth++;
 	// 	d = d->parent;
 	// }
+
+	return 0;
+}
+
+int read_path_name_cgroup_show_path(struct entry_cgroup_show_path_t *entry, struct seq_file *sf)
+{
+	if (sf == NULL || sf->buf == NULL)
+		return 0;
+
+	int len = bpf_probe_read_kernel_str(&entry->file_path[0], TOTAL_PATH_MAX, sf->buf);
+
+	bpf_printk("read %u bytes", len);
 
 	return 0;
 }
@@ -391,6 +405,24 @@ int BPF_PROG(cgroup_mkdir_exit, struct kernfs_node *parent_kn, const char *name,
 	read_path_name_cgroup(&new_entry, parent_kn, name);
 	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
 	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_mkdir_t), 0);
+
+	return 0;
+}
+
+SEC("fexit/cgroup_show_path")
+int BPF_PROG(cgroup_show_path_exit, struct seq_file *sf, struct kernfs_node *kf_node, struct kernfs_root *kf_root, int ret)
+{
+	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
+
+	struct entry_cgroup_show_path_t new_entry = {
+		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.pid = current_task->pid,
+		.ret = ret
+	};
+
+	read_path_name_cgroup_show_path(&new_entry, sf);
+	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
+	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_show_path_t), 0);
 
 	return 0;
 }

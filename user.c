@@ -119,6 +119,11 @@ void write_to_file_cgroup_mkdir(struct entry_cgroup_mkdir_t *entry, char *buffer
 	spade_write_node_proc_cgroup_mkdir(fd, entry, buffer);
 }
 
+void write_to_file_cgroup_show_path(struct entry_cgroup_show_path_t *entry, char *buffer)
+{
+	spade_write_node_proc_cgroup_show_path(fd, entry, buffer);
+}
+
 // this is a temporary fix for resolving the file path
 void process_file_path(struct entry_t *entry, char *buffer)
 {
@@ -171,6 +176,11 @@ void process_file_path_cgroup_mkdir(struct entry_cgroup_mkdir_t *entry, char *bu
 	}
 }
 
+void process_file_path_cgroup_show_path(struct entry_cgroup_show_path_t *entry, char *buffer)
+{
+	sprintf(buffer, "%s", &entry->file_path[0]);
+}
+
 int buf_process_entry(void *ctx, void *data, size_t len)
 {
 	if (len == sizeof(struct entry_t)) {
@@ -185,6 +195,12 @@ int buf_process_entry(void *ctx, void *data, size_t len)
 
 		process_file_path_cgroup_mkdir(read_entry, (char *)&path_buffer);
 		write_to_file_cgroup_mkdir(read_entry, (char *)&path_buffer);
+	} else if (len == sizeof(struct entry_cgroup_show_path_t)) {
+		struct entry_cgroup_show_path_t *read_entry = (struct entry_cgroup_show_path_t *)data;
+		char path_buffer[TOTAL_PATH_MAX];
+
+		process_file_path_cgroup_show_path(read_entry, (char *)&path_buffer);
+		write_to_file_cgroup_show_path(read_entry, (char *)&path_buffer);
 	}
 	return 0;
 }

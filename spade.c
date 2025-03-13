@@ -148,6 +148,69 @@ void spade_write_node_proc_cgroup_mkdir(int fd, struct entry_cgroup_mkdir_t *ent
 	write(fd, buf, strnlen(buf, MAX_BUFFER_LEN));
 }
 
+void spade_write_node_proc_cgroup_show_path(int fd, struct entry_cgroup_show_path_t *entry, char *buffer)
+{
+	char buf[MAX_BUFFER_LEN];
+
+	buf[0] = '\0';
+
+	char pid[32];
+
+	sprintf(pid, "%u", entry->pid);
+
+	char cgroup_inum[32];
+
+	sprintf(cgroup_inum, "%u", entry->cgroup_inum);
+
+	char ret[32];
+
+	sprintf(ret, "%d", entry->ret);
+
+	// start json
+	strncat(buf, "{", MAX_BUFFER_LEN);
+
+	// type
+	strncat(buf, "\"type\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"Activity\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"subtype\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_show_path\",", MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// id
+	strncat(buf, "\"id\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// annotations
+	strncat(buf, "\"annotations\":{", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"cgroup_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"path\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, buffer, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"ret\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, ret, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// end json
+	strncat(buf, "}}\n", MAX_BUFFER_LEN);
+	write(fd, buf, strnlen(buf, MAX_BUFFER_LEN));
+}
+
 void spade_write_node_file(int fd, struct entry_t *entry, char *buffer)
 {
 	char buf[MAX_BUFFER_LEN];
