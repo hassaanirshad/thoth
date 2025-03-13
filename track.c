@@ -293,7 +293,7 @@ int BPF_PROG(file_permission, struct file *file, int mask)
 	perms = file_mask_to_perms((file->f_inode)->i_mode, mask);
 
 	struct entry_t new_entry = {
-		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.utime = current_task->utime,
 		.gtime = current_task->gtime,
@@ -355,7 +355,7 @@ int BPF_PROG(bprm_creds_for_exec, struct linux_binprm *bprm)
 	}
 
 	struct entry_t new_entry = {
-		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.utime = current_task->utime,
 		.gtime = current_task->gtime,
@@ -379,7 +379,7 @@ int BPF_PROG(cgroup_mkdir, struct kernfs_node *parent_kn, const char *name, umod
 	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
 
 	struct entry_cgroup_mkdir_t new_entry = {
-		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid
 	};
 
@@ -396,7 +396,8 @@ int BPF_PROG(cgroup_mkdir_exit, struct kernfs_node *parent_kn, const char *name,
 	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
 
 	struct entry_cgroup_mkdir_t new_entry = {
-		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.cgroup_id = bpf_get_current_cgroup_id(),
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.ret = ret
 	};
@@ -414,7 +415,7 @@ int BPF_PROG(cgroup_show_path_exit, struct seq_file *sf, struct kernfs_node *kf_
 	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
 
 	struct entry_cgroup_show_path_t new_entry = {
-		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
 		.pid = current_task->pid,
 		.ret = ret
 	};

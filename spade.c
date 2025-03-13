@@ -40,13 +40,13 @@ void format_path_json(char *buf, const char *buffer)
 		strncat(buf, "[", MAX_BUFFER_LEN);
 		const char *p = buffer;
 		while (*p) {
-			if (*p == '\n') {
+			if (*p == '\n')
 				strncat(buf, "\",\"", MAX_BUFFER_LEN);
-			} else
+			else
 				strncat(buf, (char[]){ *p, '\0' }, MAX_BUFFER_LEN);
 			p++;
 		}
-		strncat(buf, "\"]", MAX_BUFFER_LEN); 
+		strncat(buf, "\"]", MAX_BUFFER_LEN);
 	} else {
 		strncat(buf, "\"", MAX_BUFFER_LEN);
 		strncat(buf, buffer, MAX_BUFFER_LEN);
@@ -86,9 +86,9 @@ void spade_write_node_proc(int fd, struct entry_t *entry)
 
 	sprintf(inode, "%u", entry->inode_inum);
 
-	char cgroup_inum[32];
+	char cgroup_ns_inum[32];
 
-	sprintf(cgroup_inum, "%u", entry->cgroup_inum);
+	sprintf(cgroup_ns_inum, "%u", entry->cgroup_ns_inum);
 
 	// start json
 	strncat(buf, "{", MAX_BUFFER_LEN);
@@ -111,9 +111,9 @@ void spade_write_node_proc(int fd, struct entry_t *entry)
 	strncat(buf, pid, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
-	strncat(buf, "\"cgroup_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_ns_inum\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
-	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
+	strncat(buf, cgroup_ns_inum, MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
 
 	// end json
@@ -131,9 +131,13 @@ void spade_write_node_proc_cgroup_mkdir(int fd, struct entry_cgroup_mkdir_t *ent
 
 	sprintf(pid, "%u", entry->pid);
 
-	char cgroup_inum[32];
+	char cgroup_id[32];
 
-	sprintf(cgroup_inum, "%u", entry->cgroup_inum);
+	sprintf(cgroup_id, "%u", entry->cgroup_id);
+
+	char cgroup_ns_inum[32];
+
+	sprintf(cgroup_ns_inum, "%u", entry->cgroup_ns_inum);
 
 	char ret[32];
 
@@ -164,9 +168,14 @@ void spade_write_node_proc_cgroup_mkdir(int fd, struct entry_cgroup_mkdir_t *ent
 	strncat(buf, pid, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
-	strncat(buf, "\"cgroup_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_ns_inum\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
-	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
+	strncat(buf, cgroup_ns_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"cgroup_id\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, cgroup_id, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
 	// strncat(buf, "\"path\":", MAX_BUFFER_LEN);
@@ -197,9 +206,9 @@ void spade_write_node_proc_cgroup_show_path(int fd, struct entry_cgroup_show_pat
 
 	sprintf(pid, "%u", entry->pid);
 
-	char cgroup_inum[32];
+	char cgroup_ns_inum[32];
 
-	sprintf(cgroup_inum, "%u", entry->cgroup_inum);
+	sprintf(cgroup_ns_inum, "%u", entry->cgroup_ns_inum);
 
 	char ret[32];
 
@@ -230,9 +239,9 @@ void spade_write_node_proc_cgroup_show_path(int fd, struct entry_cgroup_show_pat
 	strncat(buf, pid, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
-	strncat(buf, "\"cgroup_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_ns_inum\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
-	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
+	strncat(buf, cgroup_ns_inum, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
 	strncat(buf, "\"path\":", MAX_BUFFER_LEN);

@@ -28,7 +28,7 @@ enum operation {
 };
 
 struct entry_t {
-	unsigned int cgroup_inum;
+	unsigned int cgroup_ns_inum;
 	int pid;
 	int utime;
 	int gtime;
@@ -43,14 +43,15 @@ struct entry_t {
 };
 
 struct entry_cgroup_mkdir_t {
-	unsigned int cgroup_inum;
+	unsigned int cgroup_id;
+	unsigned int cgroup_ns_inum;
 	int pid;
 	char file_path[TOTAL_PATH_MAX];
 	int ret;
 };
 
 struct entry_cgroup_show_path_t {
-	unsigned int cgroup_inum;
+	unsigned int cgroup_ns_inum;
 	int pid;
 	char file_path[TOTAL_PATH_MAX];
 	int ret;
