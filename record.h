@@ -45,8 +45,7 @@ struct entry_t {
 struct entry_cgroup_mkdir_t {
 	unsigned int cgroup_inum;
 	int pid;
-	int file_path_depth;
-	char file_path[PATH_DEPTH_MAX][PATH_NAME_MAX];
+	char file_path[TOTAL_PATH_MAX];
 	int ret;
 };
 

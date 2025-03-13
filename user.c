@@ -153,27 +153,7 @@ void process_file_path(struct entry_t *entry, char *buffer)
 // this is a temporary fix for resolving the file path
 void process_file_path_cgroup_mkdir(struct entry_cgroup_mkdir_t *entry, char *buffer)
 {
-	int path_len = 0;
-
-	// sanity check
-	if (entry->file_path_depth <= 0 || entry->file_path_depth > PATH_DEPTH_MAX)
-		return;
-
-	for (int i = entry->file_path_depth - 1; i >= 0; i--) {
-		int len = 0;
-		if (i == entry->file_path_depth - 1) {
-			len = sprintf(buffer, "/");
-			if (len > 0)
-				path_len += len;
-		}
-		if (i == 0)
-			len = sprintf(buffer + path_len, "%s", entry->file_path[i]);
-		else
-			len = sprintf(buffer + path_len, "%s/", entry->file_path[i]);
-
-		if (len > 0)
-			path_len += len;
-	}
+	sprintf(buffer, "%s", &entry->file_path[0]);
 }
 
 void process_file_path_cgroup_show_path(struct entry_cgroup_show_path_t *entry, char *buffer)

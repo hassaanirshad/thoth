@@ -223,11 +223,10 @@ int read_path_name_cgroup(struct entry_cgroup_mkdir_t *entry, struct kernfs_node
 
 	if (name != NULL) {
 		// TODO bpf_probe_read_kernel_str
-		int len = bpf_probe_read_user_str(&entry->file_path[i], MAX_NAME_LEN, name);
+		int len = bpf_probe_read_kernel_str(&entry->file_path[0], TOTAL_PATH_MAX, name);
 		bpf_printk("read %u bytes", len);
 		// bpf_printk("read %u bytes", len);
 		// bpf_printk("%s", entry->file_path[i]);
-		entry->file_path_depth++;
 		i++;
 	}
 
