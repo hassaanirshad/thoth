@@ -408,7 +408,7 @@ int BPF_PROG(cgroup_mkdir_exit, struct kernfs_node *parent_kn, const char *name,
 	return 0;
 }
 
-SEC("fexit/cgroup_show_path")
+// SEC("fexit/cgroup_show_path")
 int BPF_PROG(cgroup_show_path_exit, struct seq_file *sf, struct kernfs_node *kf_node, struct kernfs_root *kf_root, int ret)
 {
 	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
