@@ -212,6 +212,37 @@ int read_path_name(struct entry_t *entry, struct dentry *dentry)
 	return 0;
 }
 
+int read_path_name_cgroup(struct entry_cgroup_mkdir_t *entry, struct kernfs_node *dentry, const char *name)
+{
+	struct kernfs_node *d = dentry;
+
+	if (d == NULL)
+		return 0;
+
+	int i = 0;
+
+	if (name != NULL) {
+		int len = bpf_probe_read_user_str(&entry->file_path[i], MAX_NAME_LEN, name);
+		// bpf_printk("read %u bytes", len);
+		// bpf_printk("%s", entry->file_path[i]);
+		entry->file_path_depth++;
+		i++;
+	}
+
+	// for (int i = 0; i < PATH_DEPTH_MAX; i++) {
+	// 	if (d == NULL)
+	// 		break;
+
+	// 	// int len = bpf_probe_read_kernel_str(&entry->file_path[i], MAX_NAME_LEN, d->name);
+	// 	// bpf_printk("read %u bytes", len);
+	// 	// bpf_printk("%s", entry->file_path[i]);
+	// 	// entry->file_path_depth++;
+	// 	d = d->parent;
+	// }
+
+	return 0;
+}
+
 SEC("lsm/file_permission")
 int BPF_PROG(file_permission, struct file *file, int mask)
 {
@@ -324,6 +355,42 @@ int BPF_PROG(bprm_creds_for_exec, struct linux_binprm *bprm)
 	read_path_name(&new_entry, bprm->file->f_path.dentry);
 	// bpf_probe_read_kernel_str(new_entry.file_name, FILE_PATH_MAX, bprm->file->f_path.dentry->d_iname);
 	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_t), 0);
+
+	return 0;
+}
+
+SEC("kprobe/cgroup_mkdir")
+int BPF_PROG(cgroup_mkdir, struct kernfs_node *parent_kn, const char *name, umode_t mode)
+{
+
+	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
+
+	struct entry_cgroup_mkdir_t new_entry = {
+		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.pid = current_task->pid
+	};
+
+	read_path_name_cgroup(&new_entry, parent_kn, name);
+	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
+	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_mkdir_t), 0);
+
+	return 0;
+}
+
+SEC("fexit/cgroup_mkdir")
+int BPF_PROG(cgroup_mkdir_exit, struct kernfs_node *parent_kn, const char *name, umode_t mode, int ret)
+{
+	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
+
+	struct entry_cgroup_mkdir_t new_entry = {
+		.cgroup_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.pid = current_task->pid,
+		.ret = ret
+	};
+
+	read_path_name_cgroup(&new_entry, parent_kn, name);
+	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
+	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_mkdir_t), 0);
 
 	return 0;
 }

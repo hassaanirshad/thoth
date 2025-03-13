@@ -114,6 +114,11 @@ void write_to_file(struct entry_t *entry, char *buffer)
 	// should unlock here
 }
 
+void write_to_file_cgroup_mkdir(struct entry_cgroup_mkdir_t *entry, char *buffer)
+{
+	spade_write_node_proc_cgroup_mkdir(fd, entry, buffer);
+}
+
 // this is a temporary fix for resolving the file path
 void process_file_path(struct entry_t *entry, char *buffer)
 {
@@ -140,13 +145,47 @@ void process_file_path(struct entry_t *entry, char *buffer)
 	}
 }
 
+// this is a temporary fix for resolving the file path
+void process_file_path_cgroup_mkdir(struct entry_cgroup_mkdir_t *entry, char *buffer)
+{
+	int path_len = 0;
+
+	// sanity check
+	if (entry->file_path_depth <= 0 || entry->file_path_depth > PATH_DEPTH_MAX)
+		return;
+
+	for (int i = entry->file_path_depth - 1; i >= 0; i--) {
+		int len = 0;
+		if (i == entry->file_path_depth - 1) {
+			len = sprintf(buffer, "/");
+			if (len > 0)
+				path_len += len;
+		}
+		if (i == 0)
+			len = sprintf(buffer + path_len, "%s", entry->file_path[i]);
+		else
+			len = sprintf(buffer + path_len, "%s/", entry->file_path[i]);
+
+		if (len > 0)
+			path_len += len;
+	}
+}
+
 int buf_process_entry(void *ctx, void *data, size_t len)
 {
-	struct entry_t *read_entry = (struct entry_t *)data;
-	char path_buffer[TOTAL_PATH_MAX];
+	if (len == sizeof(struct entry_t)) {
+		struct entry_t *read_entry = (struct entry_t *)data;
+		char path_buffer[TOTAL_PATH_MAX];
 
-	process_file_path(read_entry, (char *)&path_buffer);
-	write_to_file(read_entry, (char *)&path_buffer);
+		process_file_path(read_entry, (char *)&path_buffer);
+		write_to_file(read_entry, (char *)&path_buffer);
+	} else if (len == sizeof(struct entry_cgroup_mkdir_t)) {
+		struct entry_cgroup_mkdir_t *read_entry = (struct entry_cgroup_mkdir_t *)data;
+		char path_buffer[TOTAL_PATH_MAX];
+
+		process_file_path_cgroup_mkdir(read_entry, (char *)&path_buffer);
+		write_to_file_cgroup_mkdir(read_entry, (char *)&path_buffer);
+	}
 	return 0;
 }
 
