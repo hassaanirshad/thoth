@@ -22,6 +22,38 @@ char date[DATE_LEN];
 pthread_rwlock_t date_lock;
 int edge_id = 0;
 
+
+void format_path_json(char *buf, const char *buffer)
+{
+	int contains_newline = 0;
+
+	for (const char *p = buffer; *p; p++) {
+		if (*p == '\n') {
+			contains_newline = 1;
+			break;
+		}
+	}
+
+	strncat(buf, "\"path\":", MAX_BUFFER_LEN);
+
+	if (contains_newline) {
+		strncat(buf, "[", MAX_BUFFER_LEN);
+		const char *p = buffer;
+		while (*p) {
+			if (*p == '\n') {
+				strncat(buf, "\",\"", MAX_BUFFER_LEN);
+			} else
+				strncat(buf, (char[]){ *p, '\0' }, MAX_BUFFER_LEN);
+			p++;
+		}
+		strncat(buf, "\"]", MAX_BUFFER_LEN); 
+	} else {
+		strncat(buf, "\"", MAX_BUFFER_LEN);
+		strncat(buf, buffer, MAX_BUFFER_LEN);
+		strncat(buf, "\",", MAX_BUFFER_LEN);
+	}
+}
+
 static void update_datetime()
 {
 	struct tm *tm;
@@ -114,6 +146,10 @@ void spade_write_node_proc_cgroup_mkdir(int fd, struct entry_cgroup_mkdir_t *ent
 	strncat(buf, "\"type\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"Activity\",", MAX_BUFFER_LEN);
 
+	strncat(buf, "\"subtype\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_mkdir\",", MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
 	// id
 	strncat(buf, "\"id\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
@@ -133,10 +169,13 @@ void spade_write_node_proc_cgroup_mkdir(int fd, struct entry_cgroup_mkdir_t *ent
 	strncat(buf, cgroup_inum, MAX_BUFFER_LEN);
 	strncat(buf, "\",", MAX_BUFFER_LEN);
 
-	strncat(buf, "\"path\":", MAX_BUFFER_LEN);
-	strncat(buf, "\"", MAX_BUFFER_LEN);
-	strncat(buf, buffer, MAX_BUFFER_LEN);
-	strncat(buf, "\",", MAX_BUFFER_LEN);
+	// strncat(buf, "\"path\":", MAX_BUFFER_LEN);
+	// strncat(buf, "\"", MAX_BUFFER_LEN);
+	// strncat(buf, buffer, MAX_BUFFER_LEN);
+	// strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	format_path_json(buf, buffer);
+
 
 	strncat(buf, "\"ret\":", MAX_BUFFER_LEN);
 	strncat(buf, "\"", MAX_BUFFER_LEN);
