@@ -71,7 +71,7 @@ uncrustify:
 uncrustify_clean:
 	rm *backup*~
 
-all: track skel user uncrustify uncrustify_clean
+all: track skel user
 
 install:
 	sudo cp --force ./thothd /usr/bin/thothd

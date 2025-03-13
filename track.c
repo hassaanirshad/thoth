@@ -372,7 +372,7 @@ int BPF_PROG(bprm_creds_for_exec, struct linux_binprm *bprm)
 	return 0;
 }
 
-SEC("kprobe/cgroup_mkdir")
+//SEC("kprobe/cgroup_mkdir")
 int BPF_PROG(cgroup_mkdir, struct kernfs_node *parent_kn, const char *name, umode_t mode)
 {
 
@@ -423,6 +423,56 @@ int BPF_PROG(cgroup_show_path_exit, struct seq_file *sf, struct kernfs_node *kf_
 	read_path_name_cgroup_show_path(&new_entry, sf);
 	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
 	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_show_path_t), 0);
+
+	return 0;
+}
+
+SEC("fexit/cgroup_attach_task")
+int BPF_PROG(cgroup_attach_task, struct cgroup *dst_cgrp, struct task_struct *leader, bool threadgroup, int ret)
+// SEC("fexit/cgroup_migrate_add_task")
+// int BPF_PROG(cgroup_migrate_add_task, struct task_struct *task, struct cgroup_mgctx *mgctx)
+{
+
+	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
+
+	struct entry_cgroup_attach_task_t new_entry = {
+		.actor_cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.actor_pid = current_task->pid,
+		.acted_upon_cgroup_ns_inum = leader->nsproxy->cgroup_ns->ns.inum,
+		.acted_upon_pid = leader->pid
+	};
+
+
+
+	// read_path_name_cgroup_show_path(&new_entry, sf);
+	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
+	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_cgroup_attach_task_t), 0);
+
+	return 0;
+}
+
+SEC("fexit/kernel_clone")
+int BPF_PROG(kernel_clone, struct kernel_clone_args *args, pid_t pid)
+// SEC("fexit/cgroup_migrate_add_task")
+// int BPF_PROG(cgroup_migrate_add_task, struct task_struct *task, struct cgroup_mgctx *mgctx)
+{
+
+	struct task_struct *current_task = (struct task_struct *)bpf_get_current_task_btf();
+
+	struct entry_kernel_clone_t new_entry = {
+		.cgroup_ns_inum = current_task->nsproxy->cgroup_ns->ns.inum,
+		.pid = current_task->pid,
+		.ret_pid = pid
+		// ,
+		// .acted_upon_cgroup_ns_inum = leader->nsproxy->cgroup_ns->ns.inum,
+		// .acted_upon_pid = leader->pid
+	};
+
+
+
+	// read_path_name_cgroup_show_path(&new_entry, sf);
+	// bpf_probe_read_kernel_str(new_entry.file_name, MAX_NAME_LEN, file->f_path.dentry->d_iname);
+	bpf_ringbuf_output(&ringbuf, &new_entry, sizeof(struct entry_kernel_clone_t), 0);
 
 	return 0;
 }

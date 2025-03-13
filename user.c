@@ -124,6 +124,16 @@ void write_to_file_cgroup_show_path(struct entry_cgroup_show_path_t *entry, char
 	spade_write_node_proc_cgroup_show_path(fd, entry, buffer);
 }
 
+void write_to_file_cgroup_attach_task(struct entry_cgroup_attach_task_t *entry)
+{
+	spade_write_node_proc_cgroup_attach_task(fd, entry);
+}
+
+void write_to_file_kernel_clone(struct entry_kernel_clone_t *entry)
+{
+	spade_write_node_proc_kernel_clone(fd, entry);
+}
+
 // this is a temporary fix for resolving the file path
 void process_file_path(struct entry_t *entry, char *buffer)
 {
@@ -181,6 +191,14 @@ int buf_process_entry(void *ctx, void *data, size_t len)
 
 		process_file_path_cgroup_show_path(read_entry, (char *)&path_buffer);
 		write_to_file_cgroup_show_path(read_entry, (char *)&path_buffer);
+	} else if (len == sizeof(struct entry_cgroup_attach_task_t)) {
+		struct entry_cgroup_attach_task_t *read_entry = (struct entry_cgroup_attach_task_t *)data;
+
+		write_to_file_cgroup_attach_task(read_entry);
+	} else if (len == sizeof(struct entry_kernel_clone_t)) {
+		struct entry_kernel_clone_t *read_entry = (struct entry_kernel_clone_t *)data;
+
+		write_to_file_kernel_clone(read_entry);
 	}
 	return 0;
 }

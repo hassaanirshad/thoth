@@ -259,6 +259,142 @@ void spade_write_node_proc_cgroup_show_path(int fd, struct entry_cgroup_show_pat
 	write(fd, buf, strnlen(buf, MAX_BUFFER_LEN));
 }
 
+// spade_write_node_proc_cgroup_attach_task
+
+void spade_write_node_proc_cgroup_attach_task(int fd, struct entry_cgroup_attach_task_t *entry)
+{
+	// unsigned int actor_cgroup_ns_inum;
+	// int actor_pid;
+	// unsigned int acted_upon_cgroup_ns_inum;
+	// int acted_upon_pid;
+
+	char buf[MAX_BUFFER_LEN];
+
+	buf[0] = '\0';
+
+	char actor_cgroup_ns_inum[32];
+	sprintf(actor_cgroup_ns_inum, "%u", entry->actor_cgroup_ns_inum);
+
+	char actor_pid[32];
+	sprintf(actor_pid, "%d", entry->actor_pid);
+
+	char acted_upon_cgroup_ns_inum[32];
+	sprintf(acted_upon_cgroup_ns_inum, "%u", entry->acted_upon_cgroup_ns_inum);
+
+	char acted_upon_pid[32];
+	sprintf(acted_upon_pid, "%d", entry->acted_upon_pid);
+
+	// start json
+	strncat(buf, "{", MAX_BUFFER_LEN);
+
+	// type
+	strncat(buf, "\"type\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"Activity\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"subtype\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"cgroup_attach_task\",", MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// id
+	strncat(buf, "\"id\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, actor_pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// annotations
+	strncat(buf, "\"annotations\":{", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, actor_pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"actor_cgroup_ns_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, actor_cgroup_ns_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"actor_pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, actor_pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"acted_upon_cgroup_ns_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, acted_upon_cgroup_ns_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"acted_upon_pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, acted_upon_pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+
+	// end json
+	strncat(buf, "}}\n", MAX_BUFFER_LEN);
+	write(fd, buf, strnlen(buf, MAX_BUFFER_LEN));
+}
+
+void spade_write_node_proc_kernel_clone(int fd, struct entry_kernel_clone_t *entry)
+{
+	// unsigned int actor_cgroup_ns_inum;
+	// int actor_pid;
+	// unsigned int acted_upon_cgroup_ns_inum;
+	// int acted_upon_pid;
+
+	char buf[MAX_BUFFER_LEN];
+
+	buf[0] = '\0';
+
+	char cgroup_ns_inum[32];
+	sprintf(cgroup_ns_inum, "%u", entry->cgroup_ns_inum);
+
+	char pid[32];
+	sprintf(pid, "%d", entry->pid);
+
+	char ret_pid[32];
+	sprintf(ret_pid, "%d", entry->ret_pid);
+
+	// start json
+	strncat(buf, "{", MAX_BUFFER_LEN);
+
+	// type
+	strncat(buf, "\"type\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"Activity\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"subtype\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"kernel_clone\",", MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// id
+	strncat(buf, "\"id\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// annotations
+	strncat(buf, "\"annotations\":{", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"cgroup_ns_inum\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, cgroup_ns_inum, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	strncat(buf, "\"ret_pid\":", MAX_BUFFER_LEN);
+	strncat(buf, "\"", MAX_BUFFER_LEN);
+	strncat(buf, ret_pid, MAX_BUFFER_LEN);
+	strncat(buf, "\",", MAX_BUFFER_LEN);
+
+	// end json
+	strncat(buf, "}}\n", MAX_BUFFER_LEN);
+	write(fd, buf, strnlen(buf, MAX_BUFFER_LEN));
+}
+
 void spade_write_node_file(int fd, struct entry_t *entry, char *buffer)
 {
 	char buf[MAX_BUFFER_LEN];

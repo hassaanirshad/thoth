@@ -57,4 +57,17 @@ struct entry_cgroup_show_path_t {
 	int ret;
 };
 
+struct entry_cgroup_attach_task_t {
+	unsigned int actor_cgroup_ns_inum;
+	int actor_pid;
+	unsigned int acted_upon_cgroup_ns_inum;
+	int acted_upon_pid;
+};
+
+struct entry_kernel_clone_t {
+	unsigned int cgroup_ns_inum;
+	int pid;
+	int ret_pid;
+};
+
 #endif
