@@ -24,6 +24,8 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdio.h>
+#include <errno.h>
 
 #include "common.h"
 #include "record.h"
@@ -35,9 +37,25 @@
 // #define TESTING_DIR "/tmp/thothd_testing2"
 #define TESTING_DIR "/home/ubuntu/thoth/tmp/runtime-testing"
 
+#define LOG_FILE_SYMLINK "/tmp/current_thoth_prov_log.json"
+
 static struct track *skel = NULL;
 static int fd;
 static int inode_track_index = 0;
+
+static int setup_symlink(char *src, char *tgt)
+{
+	if (access(tgt, F_OK) == 0)
+		if (unlink(tgt) != 0) {
+			perror("Error removing existing symlink");
+			return 1;
+		}
+	if (symlink(src, tgt) != 0) {
+		perror("Error creating symlink");
+		return 1;
+	}
+	return 0;
+}
 
 static void init_log()
 {
@@ -50,6 +68,8 @@ static void init_log()
 	strftime(filename, sizeof(filename), "/tmp/prov_%Y-%m-%d_%H:%M:%S.json", time_str);
 
 	fd = open(filename, O_RDWR | O_CREAT);
+
+	setup_symlink(&filename[0], &LOG_FILE_SYMLINK[0]);
 }
 
 static void sig_handler(int sig)
